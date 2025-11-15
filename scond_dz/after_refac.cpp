@@ -1,26 +1,30 @@
 #include <iostream>
 #include <cmath>
 
+int const array_size = 20;
 
 int main()
 {
-    int a[20], i, b;
-
-    for (i = 0; i < 20; i++){
-        a[i] = rand() % 20;
-        std::cout << a[i] << ' ';
+    int list[array_size];
+    
+    std::cout << "Ваш начальный список: ";
+    for (int i = 0; i < array_size; i++){
+        list[i] = rand() % array_size;
+        std::cout << list[i] << ' ';
     }
 
     std::cout << std::endl;
     
-    for (i = 0; i < 10; i++){
-        b = a[i];
-        a[i] = a[19 - i];
-        a[19 - i] = b;
+    int b;
+    for (int i = 0; i < array_size / 2; i++){
+        b = list[i];
+        list[i] = list[array_size - i - 1];
+        list[array_size - i - 1] = b;
     }
     
-    for (i = 0; i < 20; i++){
-        std::cout << a[i] << ' ';
+    std::cout << "Ваш итоговый список: ";
+    for (int i = 0; i < array_size; i++){
+        std::cout << list[i] << ' ';
     }
 
     return 0;

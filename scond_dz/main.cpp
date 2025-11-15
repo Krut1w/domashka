@@ -6,11 +6,9 @@
 #include "sort.h"
 
 int main(){
-    std::locale::global(std::locale("C"));
-    std::wcout.imbue(std::locale());
 
     int size;
-    std::cout << "Enter the len of array: ";
+    std::cout << "Введите длину массива: ";
     std::cin >> size;
 
     int* arr = new int[size];
@@ -20,10 +18,15 @@ int main(){
     for (int i = 0; i < size; i++){
         arr[i] = std::rand() % 100;
     }
-    
+    std::cout << "Ваш список до сортировки: ";
+    for (int i = 0; i < size; i++){
+        std::cout << arr[i] << " ";
+    }
+    std::cout << std::endl;
+
     shellsort(arr, size);
 
-    std::cout << "array after sort\n";
+    std::cout << "Ваш список после сортировки: ";
     for (int i = 0; i < size; i++){
         std::cout << arr[i] << " "; 
     }

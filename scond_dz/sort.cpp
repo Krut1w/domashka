@@ -1,7 +1,6 @@
 #include <iostream>
 #include <vector>
 
-using namespace std;
 
 void shellsort(int *arr, int size){
     for (int gap = size/2; gap > 0; gap /= 2){
