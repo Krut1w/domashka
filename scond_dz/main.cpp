@@ -1,7 +1,6 @@
 #include <cstdlib>
 #include <ctime>
 #include <iostream>
-#include <locale>
 
 #include "sort.h"
 

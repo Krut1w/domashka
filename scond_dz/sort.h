@@ -5,6 +5,6 @@
 using namespace std;
 
 // Объявление функции shellsort
-void shellsort(int* arr, int size);
+void shellsort(int* arr, const int size);
 
 #endif
