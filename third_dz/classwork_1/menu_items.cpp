@@ -34,7 +34,7 @@ namespace{
 }
 
 const Kpav:: MenuItem Kpav::STUDY_1GRADE ={
-    "1 - Изучать предметы 1-го класса", Kpav::show_menu, &Kpav::STUDY, study_1grade_children, study_1grade_size
+    "1 - Изучать предметы 1-го класса", Kpav::show_menu3, &Kpav::STUDY, study_1grade_children, study_1grade_size
 };
 
 const Kpav::MenuItem Kpav::STUDY_2GRADE = {
@@ -60,7 +60,7 @@ namespace {
 }
 
 const Kpav::MenuItem Kpav::STUDY = {
-    "1 - хочу учить школьные предметы", Kpav::show_menu, &Kpav::MAIN, study_children, study_size
+    "1 - хочу учить школьные предметы", Kpav::show_menu2, &Kpav::MAIN, study_children, study_size
 };
 
 const Kpav::MenuItem Kpav::EXIT = {

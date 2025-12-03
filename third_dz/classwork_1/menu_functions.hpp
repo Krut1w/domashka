@@ -3,8 +3,11 @@
 #include "menu.hpp"
 
 namespace Kpav {
+
     const MenuItem* show_menu(const MenuItem* current);
-    const MenuItem* show_menu(const MenuItem* current);
+    const MenuItem* show_menu2(const MenuItem* current);
+    const MenuItem* show_menu3(const MenuItem* current);
+
 
     const MenuItem* exit(const MenuItem* current);
 

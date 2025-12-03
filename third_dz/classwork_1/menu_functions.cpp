@@ -3,28 +3,40 @@
 #include <iostream>
 #include <cstdlib>
 
+namespace {
+    const Kpav::MenuItem* show_children(const Kpav::MenuItem* current) {
+        for (int i = 1; i < current->children_count; i++){  
+            std::cout << current->children[i]->title << std::endl;
+        }
+
+        std::cout << current->children[0]->title << std::endl;
+        std::cout << "обучайка > ";
+
+        int user_input;
+        std::cin >> user_input;
+        std::cout << std::endl;
+
+        return current->children[user_input];
+    }
+} // namespace 
 
 
 const Kpav::MenuItem* Kpav::show_menu(const MenuItem* current){
-    if (current->title != nullptr){
-        std::cout << current->title << std::endl;
-    }
-    
-    for (int i = 1; i < current->children_count; i++){  
-        std::cout << current->children[i]->title << std::endl;
-    }
-
-    std::cout << current->children[0]->title << std::endl;
-    std::cout << "обучайка > ";
-
-    int user_input;
-    std::cin >> user_input;
-    std::cout << std::endl;
-
-    return current->children[user_input];
+    std::cout << "Главное меню" << std::endl;
+    return show_children(current);
 }
 
-const Kpav::MenuItem* Kpav::show_menu2(const MenuItem* current){};
+const Kpav::MenuItem* Kpav::show_menu2(const MenuItem* current){
+    std::cout << "Второй уровень меню" << std::endl;
+    // std::cout << "Вы перешли на второй уровень\n";
+    return show_children(current);
+}
+
+const Kpav::MenuItem* Kpav::show_menu3(const MenuItem* current){
+    std::cout << "Третий уровень меню"<< std::endl;
+    return show_children(current);
+}
+
 
 const Kpav::MenuItem* Kpav::exit(const MenuItem* current){
     std::exit(0);
