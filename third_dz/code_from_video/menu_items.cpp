@@ -45,5 +45,5 @@ namespace {
 }
 
 const Kpav::MenuItem Kpav::MAIN = {
-    nullptr, Kpav::show_menu, nullptr, main_children, main_size
+    nullptr, Kpav::show_menu, nullptr, main_children, main_size 
 };

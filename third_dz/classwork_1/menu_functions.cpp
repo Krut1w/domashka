@@ -3,9 +3,14 @@
 #include <iostream>
 #include <cstdlib>
 
+
+
 const Kpav::MenuItem* Kpav::show_menu(const MenuItem* current){
-    std::cout << "Добро пожаловать в обучайку" << std::endl;
-    for (int i = 1; i < current->children_count; i++){
+    if (current->title != nullptr){
+        std::cout << current->title << std::endl;
+    }
+    
+    for (int i = 1; i < current->children_count; i++){  
         std::cout << current->children[i]->title << std::endl;
     }
 
@@ -18,6 +23,8 @@ const Kpav::MenuItem* Kpav::show_menu(const MenuItem* current){
 
     return current->children[user_input];
 }
+
+const Kpav::MenuItem* Kpav::show_menu2(const MenuItem* current){};
 
 const Kpav::MenuItem* Kpav::exit(const MenuItem* current){
     std::exit(0);

@@ -4,6 +4,7 @@
 
 namespace Kpav {
     const MenuItem* show_menu(const MenuItem* current);
+    const MenuItem* show_menu(const MenuItem* current);
 
     const MenuItem* exit(const MenuItem* current);
 

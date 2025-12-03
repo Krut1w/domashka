@@ -1,11 +1,13 @@
 #include <iostream>
 
 #include "menu.hpp"
+#include "menu_items.hpp"
+#include "menu_functions.hpp"
 
 int main(){
-    const Kpav::MenuItem* current = &Kpav::Main;
+    const Kpav::MenuItem* current = &Kpav::MAIN;
 
-    do{
+    do{ 
         current = current->func(current);
     }while (true);
 
