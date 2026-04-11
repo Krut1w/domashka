@@ -1,3 +1,4 @@
+#include "shell_sort.hpp"
 void shellsort(int *arr, const int size){
     for (int gap = size/2; gap > 0; gap /= 2){
         for (int i = gap; i < size; i++) {

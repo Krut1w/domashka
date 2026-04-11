@@ -1,10 +1,8 @@
-#ifndef SORT_H
-#define SORT_H
+#ifndef SHELL_SORT_HPP
+#define SHELL_SORT_HPP
 
-#include <vector>
-using namespace std;
-
-// Объявление функции shellsort
-void shellsort(int* arr, const int size);
+namespace biv {
+    void shell_sort(int* arr, const int size);
+}
 
 #endif
