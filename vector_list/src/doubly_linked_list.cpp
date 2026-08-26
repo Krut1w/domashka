@@ -33,7 +33,7 @@ bool DoublyLinkedList<T>::has_item(const T& value) const noexcept {
 		if (current->value == value) {
 			return true;
 		}
-		current=current->next;
+		current = current->next;
 	}
 	return false;
 }
@@ -64,7 +64,7 @@ template<typename T>
 bool DoublyLinkedList<T>::remove_first(const T& value) noexcept {
 	Node* current = begin;
 	while (current != nullptr) {
-		if (current->value = value) {
+		if (current->value == value) {
 			if (current->prev == nullptr && current->next == nullptr) {
 				begin = end = nullptr;
 			} else if (current->prev == nullptr) {
@@ -80,6 +80,7 @@ bool DoublyLinkedList<T>::remove_first(const T& value) noexcept {
 			delete current;
 			return true;
 		}
+		current = current->next;
 	}
-	return false;			
+	return false;
 }
