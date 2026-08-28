@@ -36,7 +36,7 @@ TEST(DoublyLinkedListTest, RemoveFirst) {
 
     EXPECT_TRUE(list.remove_first(2));
     EXPECT_EQ(list.get_size(), 3);
-    EXPECT_FALSE(list.has_item(2) && list.get_size() == 3); 
+    EXPECT_TRUE(list.has_item(2));
 
     EXPECT_FALSE(list.remove_first(42));
 }

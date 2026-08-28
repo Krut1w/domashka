@@ -1,3 +1,4 @@
 @echo off
 chcp 65001
-ctest --output-on-failure
+
+ctest --test-dir build_ninja --output-on-failure
