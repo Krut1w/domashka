@@ -1,9 +1,9 @@
 #include <cmath>
 #include <cstdio>
+#include <cstdlib>
 #include <windows.h>
 
-#define MAP_WIDTH 80
-#define MAP_HEIGHT 25
+#include "Map.hpp"
 
 typedef struct SObject {
     float x, y;
@@ -14,8 +14,6 @@ typedef struct SObject {
     float horiz_speed;
 } TObject;
 
-void clear_map(char map[MAP_HEIGHT][MAP_WIDTH + 1]);
-void show_map(char map[MAP_HEIGHT][MAP_WIDTH + 1]);
 void set_object_pos(TObject* const obj, const float x_pos, const float y_pos);
 void init_object(TObject* const obj, const float x_pos, const float y_pos, const float o_width, const float o_height, const char in_type);
 void player_dead(TObject& mario, TObject*& brick, int& brick_length, TObject*& moving, int& moving_length, int& level, int& score, int& max_lvl);
@@ -28,13 +26,12 @@ void mario_collision(TObject& mario, TObject*& moving, int& moving_length, int& 
 void horizon_move_object(TObject* const obj, TObject& mario, TObject*& brick, int& brick_length, TObject*& moving, int& moving_length, int& level, int& score, int& max_lvl);
 BOOL is_pos_in_map(const int x, const int y);
 void put_object_on_map(char map[MAP_HEIGHT][MAP_WIDTH + 1], const TObject obj);
-void set_cur(const int x, const int y);
 void horizon_move_map(const float dx, TObject& mario, TObject*& brick, const int brick_length, TObject*& moving, const int moving_length);
-void put_score_on_map(char map[MAP_HEIGHT][MAP_WIDTH + 1], const int score);
 void create_level(const int lvl, TObject& mario, TObject*& brick, int& brick_length, TObject*& moving, int& moving_length, int& score, int& max_lvl);
 
 int main(){
-    char map[MAP_HEIGHT][MAP_WIDTH + 1];
+    Map map;
+
     TObject mario;
 
     TObject* brick = NULL;
@@ -50,7 +47,7 @@ int main(){
     create_level(level, mario, brick, brick_length, moving, moving_length, score, max_lvl);
 
     do{
-        clear_map(map);
+        map.clear_map();
 
         if ((mario.is_fly == FALSE) && (GetKeyState(VK_SPACE) < 0)){
             mario.vert_speed = -1;
@@ -72,20 +69,20 @@ int main(){
         mario_collision(mario, moving, moving_length, score, brick, brick_length, level, max_lvl);
 
         for (int i = 0; i < brick_length; i++){
-            put_object_on_map(map, brick[i]);
+            put_object_on_map(map.get_matrix(), brick[i]);
         }
 
         for (int i = 0; i < moving_length; i++){
             vert_move_object(moving + i, mario, brick, brick_length, moving, moving_length, level, score, max_lvl);
             horizon_move_object(moving + i, mario, brick, brick_length, moving, moving_length, level, score, max_lvl);
-            put_object_on_map(map, moving[i]);
+            put_object_on_map(map.get_matrix(), moving[i]);
         }
 
-        put_object_on_map(map, mario);
-        put_score_on_map(map, score);
+        put_object_on_map(map.get_matrix(), mario);
+        map.put_score_on_map(score);
 
-        set_cur(0, 0);
-        show_map(map);
+        map.set_cur(0, 0);
+        map.show_map();
 
         //Sleep(10);
 
@@ -100,26 +97,6 @@ int main(){
     }
 
     return 0;
-}
-
-void clear_map(char map[MAP_HEIGHT][MAP_WIDTH + 1]){
-    for (int i = 0; i < MAP_WIDTH; i++){
-        map[0][i] = ' ';
-    }
-
-    map[0][MAP_WIDTH] = '\0';
-
-    for (int j = 1; j < MAP_HEIGHT; j++){
-        sprintf(map[j], "%s", map[0]);
-    }
-}
-
-void show_map(char map[MAP_HEIGHT][MAP_WIDTH + 1]){
-    map[MAP_HEIGHT - 1][MAP_WIDTH - 1] = '\0';
-
-    for (int j = 0; j < MAP_HEIGHT; j++){
-        printf("\n%s", map[j]);
-    }
 }
 
 void set_object_pos(TObject* const obj, const float x_pos, const float y_pos){
@@ -139,12 +116,14 @@ void init_object(TObject* const obj, const float x_pos, const float y_pos, const
 void player_dead(TObject& mario, TObject*& brick, int& brick_length, TObject*& moving, int& moving_length, int& level, int& score, int& max_lvl){
     system("color 4F");
     Sleep(1000);
+
     create_level(level, mario, brick, brick_length, moving, moving_length, score, max_lvl);
 }
 
 void vert_move_object(TObject* const obj, TObject& mario, TObject*& brick, int& brick_length, TObject*& moving, int& moving_length, int& level, int& score, int& max_lvl){
     (*obj).is_fly = TRUE;
     (*obj).vert_speed += 0.05;
+
     set_object_pos(obj, (*obj).x, (*obj).y + (*obj).vert_speed);
 
     for (int i = 0; i < brick_length; i++){
@@ -155,7 +134,16 @@ void vert_move_object(TObject* const obj, TObject& mario, TObject*& brick, int& 
 
             if ((brick[i].c_type == '?') && ((*obj).vert_speed < 0) && (obj == &mario)){
                 brick[i].c_type = '-';
-                init_object(get_new_moving(moving, moving_length), brick[i].x, brick[i].y - 3, 3, 2, '$');
+
+                init_object(
+                    get_new_moving(moving, moving_length),
+                    brick[i].x,
+                    brick[i].y - 3,
+                    3,
+                    2,
+                    '$'
+                );
+
                 moving[moving_length - 1].vert_speed = -0.7f;
             }
 
@@ -212,6 +200,7 @@ void mario_collision(TObject& mario, TObject*& moving, int& moving_length, int& 
 
                     if (is_mario_falling_on_top){
                         score += 50;
+
                         delete_moving(moving, moving_length, i);
                         i--;
                     }
@@ -224,8 +213,10 @@ void mario_collision(TObject& mario, TObject*& moving, int& moving_length, int& 
 
                 case '$':{
                     score += 100;
+
                     delete_moving(moving, moving_length, i);
                     i--;
+
                     break;
                 }
             }
@@ -240,12 +231,14 @@ void horizon_move_object(TObject* const obj, TObject& mario, TObject*& brick, in
         if (is_collision(*obj, brick[i])){
             (*obj).x -= (*obj).horiz_speed;
             (*obj).horiz_speed = -(*obj).horiz_speed;
+
             return;
         }
     }
 
     if ((*obj).c_type == 'o'){
         TObject tmp = *obj;
+
         vert_move_object(&tmp, mario, brick, brick_length, moving, moving_length, level, score, max_lvl);
 
         if (tmp.is_fly == TRUE){
@@ -272,13 +265,6 @@ void put_object_on_map(char map[MAP_HEIGHT][MAP_WIDTH + 1], const TObject obj){
             }
         }
     }
-}
-
-void set_cur(const int x, const int y){
-    COORD coord;
-    coord.X = x;
-    coord.Y = y;
-    SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), coord);
 }
 
 void horizon_move_map(const float dx, TObject& mario, TObject*& brick, const int brick_length, TObject*& moving, const int moving_length){
@@ -321,6 +307,7 @@ TObject* get_new_brick(TObject*& brick, int& brick_length){
     }
 
     brick = temp_brick;
+
     return brick + brick_length - 1;
 }
 
@@ -338,18 +325,8 @@ TObject* get_new_moving(TObject*& moving, int& moving_length){
     }
 
     moving = temp_moving;
+
     return moving + moving_length - 1;
-}
-
-void put_score_on_map(char map[MAP_HEIGHT][MAP_WIDTH + 1], const int score){
-    char text_buffer[30];
-    sprintf(text_buffer, "Score %d", score);
-
-    const int len = strlen(text_buffer);
-
-    for (int i = 0; i < len; i++){
-        map[1][i + 5] = text_buffer[i];
-    }
 }
 
 void create_level(const int lvl, TObject& mario, TObject*& brick, int& brick_length, TObject*& moving, int& moving_length, int& score, int& max_lvl){
@@ -368,8 +345,6 @@ void create_level(const int lvl, TObject& mario, TObject*& brick, int& brick_len
 
     switch (lvl){
         case 1:{
-            brick_length = 0;
-
             init_object(get_new_brick(brick, brick_length), 20, 20, 40, 5, '#');
             init_object(get_new_brick(brick, brick_length), 30, 10, 5, 3, '?');
             init_object(get_new_brick(brick, brick_length), 50, 10, 5, 3, '?');
@@ -391,16 +366,12 @@ void create_level(const int lvl, TObject& mario, TObject*& brick, int& brick_len
         }
 
         case 2:{
-            brick_length = 0;
-
             init_object(get_new_brick(brick, brick_length), 20, 20, 40, 5, '#');
             init_object(get_new_brick(brick, brick_length), 60, 15, 10, 10, '#');
             init_object(get_new_brick(brick, brick_length), 80, 20, 20, 5, '#');
             init_object(get_new_brick(brick, brick_length), 120, 15, 10, 10, '#');
             init_object(get_new_brick(brick, brick_length), 150, 20, 40, 5, '#');
             init_object(get_new_brick(brick, brick_length), 210, 15, 10, 10, '+');
-
-            moving_length = 0;
 
             init_object(get_new_moving(moving, moving_length), 25, 10, 3, 2, 'o');
             init_object(get_new_moving(moving, moving_length), 80, 10, 3, 2, 'o');
@@ -413,14 +384,10 @@ void create_level(const int lvl, TObject& mario, TObject*& brick, int& brick_len
         }
 
         case 3:{
-            brick_length = 0;
-
             init_object(get_new_brick(brick, brick_length), 20, 20, 40, 5, '#');
             init_object(get_new_brick(brick, brick_length), 80, 20, 15, 5, '#');
             init_object(get_new_brick(brick, brick_length), 120, 15, 15, 10, '#');
             init_object(get_new_brick(brick, brick_length), 160, 10, 15, 15, '+');
-
-            moving_length = 0;
 
             init_object(get_new_moving(moving, moving_length), 25, 10, 3, 2, 'o');
             init_object(get_new_moving(moving, moving_length), 50, 10, 3, 2, 'o');
