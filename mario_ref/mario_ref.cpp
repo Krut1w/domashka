@@ -1,7 +1,5 @@
-#include <cstdio>
 #include <cmath>
-#include <cstdlib>
-#include <cstring>
+#include <cstdio>
 #include <windows.h>
 
 #define MAP_WIDTH 80
@@ -37,7 +35,6 @@ void create_level(const int lvl, TObject& mario, TObject*& brick, int& brick_len
 
 int main(){
     char map[MAP_HEIGHT][MAP_WIDTH + 1];
-
     TObject mario;
 
     TObject* brick = NULL;
@@ -93,6 +90,14 @@ int main(){
         //Sleep(10);
 
     }while (GetKeyState(VK_ESCAPE) >= 0);
+
+    if (brick != NULL){
+        delete[] brick;
+    }
+
+    if (moving != NULL){
+        delete[] moving;
+    }
 
     return 0;
 }
@@ -176,33 +181,53 @@ void vert_move_object(TObject* const obj, TObject& mario, TObject*& brick, int& 
 
 void delete_moving(TObject*& moving, int& moving_length, const int i){
     moving_length--;
-    moving[i] = moving[moving_length];
-    moving = (TObject*)realloc(moving, sizeof(*moving) * moving_length);
+
+    if (moving_length > 0){
+        moving[i] = moving[moving_length];
+
+        TObject* temp_moving = new TObject[moving_length];
+
+        for (int j = 0; j < moving_length; j++){
+            temp_moving[j] = moving[j];
+        }
+
+        delete[] moving;
+        moving = temp_moving;
+    }
+    else{
+        delete[] moving;
+        moving = NULL;
+    }
 }
 
 void mario_collision(TObject& mario, TObject*& moving, int& moving_length, int& score, TObject*& brick, int& brick_length, int& level, int& max_lvl){
     for (int i = 0; i < moving_length; i++){
         if (is_collision(mario, moving[i])){
-            if (moving[i].c_type == 'o'){
-                if ((mario.is_fly == TRUE)
-                    && (mario.vert_speed > 0)
-                    && (mario.y + mario.height < moving[i].y + moving[i].height * 0.5f)){
+            switch (moving[i].c_type){
+                case 'o':{
+                    const bool is_mario_falling_on_top =
+                        (mario.is_fly == TRUE) &&
+                        (mario.vert_speed > 0) &&
+                        (mario.y + mario.height < moving[i].y + moving[i].height * 0.5f);
 
-                    score += 50;
+                    if (is_mario_falling_on_top){
+                        score += 50;
+                        delete_moving(moving, moving_length, i);
+                        i--;
+                    }
+                    else{
+                        player_dead(mario, brick, brick_length, moving, moving_length, level, score, max_lvl);
+                    }
+
+                    break;
+                }
+
+                case '$':{
+                    score += 100;
                     delete_moving(moving, moving_length, i);
                     i--;
-                    continue;
+                    break;
                 }
-                else{
-                    player_dead(mario, brick, brick_length, moving, moving_length, level, score, max_lvl);
-                }
-            }
-
-            if (moving[i].c_type == '$'){
-                score += 100;
-                delete_moving(moving, moving_length, i);
-                i--;
-                continue;
             }
         }
     }
@@ -284,13 +309,35 @@ BOOL is_collision(const TObject o1, const TObject o2){
 
 TObject* get_new_brick(TObject*& brick, int& brick_length){
     brick_length++;
-    brick = (TObject*)realloc(brick, sizeof(*brick) * brick_length);
+
+    TObject* temp_brick = new TObject[brick_length];
+
+    if (brick != NULL){
+        for (int j = 0; j < brick_length - 1; j++){
+            temp_brick[j] = brick[j];
+        }
+
+        delete[] brick;
+    }
+
+    brick = temp_brick;
     return brick + brick_length - 1;
 }
 
 TObject* get_new_moving(TObject*& moving, int& moving_length){
     moving_length++;
-    moving = (TObject*)realloc(moving, sizeof(*moving) * moving_length);
+
+    TObject* temp_moving = new TObject[moving_length];
+
+    if (moving != NULL){
+        for (int j = 0; j < moving_length - 1; j++){
+            temp_moving[j] = moving[j];
+        }
+
+        delete[] moving;
+    }
+
+    moving = temp_moving;
     return moving + moving_length - 1;
 }
 
@@ -309,71 +356,81 @@ void create_level(const int lvl, TObject& mario, TObject*& brick, int& brick_len
     system("color 9F");
 
     brick_length = 0;
-    brick = (TObject*)realloc(brick, 0);
+    delete[] brick;
+    brick = NULL;
 
     moving_length = 0;
-    moving = (TObject*)realloc(moving, 0);
+    delete[] moving;
+    moving = NULL;
 
     init_object(&mario, 39, 10, 3, 3, '@');
     score = 0;
 
-    if (lvl == 1){
-        brick_length = 0;
+    switch (lvl){
+        case 1:{
+            brick_length = 0;
 
-        init_object(get_new_brick(brick, brick_length), 20, 20, 40, 5, '#');
-        init_object(get_new_brick(brick, brick_length), 30, 10, 5, 3, '?');
-        init_object(get_new_brick(brick, brick_length), 50, 10, 5, 3, '?');
-        init_object(get_new_brick(brick, brick_length), 60, 15, 40, 10, '#');
-        init_object(get_new_brick(brick, brick_length), 60, 5, 10, 3, '-');
-        init_object(get_new_brick(brick, brick_length), 70, 5, 5, 3, '?');
-        init_object(get_new_brick(brick, brick_length), 75, 5, 5, 3, '-');
-        init_object(get_new_brick(brick, brick_length), 80, 5, 5, 3, '?');
-        init_object(get_new_brick(brick, brick_length), 85, 5, 10, 3, '-');
-        init_object(get_new_brick(brick, brick_length), 100, 20, 20, 5, '#');
-        init_object(get_new_brick(brick, brick_length), 120, 15, 10, 10, '#');
-        init_object(get_new_brick(brick, brick_length), 150, 20, 40, 5, '#');
-        init_object(get_new_brick(brick, brick_length), 210, 15, 10, 10, '+');
+            init_object(get_new_brick(brick, brick_length), 20, 20, 40, 5, '#');
+            init_object(get_new_brick(brick, brick_length), 30, 10, 5, 3, '?');
+            init_object(get_new_brick(brick, brick_length), 50, 10, 5, 3, '?');
+            init_object(get_new_brick(brick, brick_length), 60, 15, 40, 10, '#');
+            init_object(get_new_brick(brick, brick_length), 60, 5, 10, 3, '-');
+            init_object(get_new_brick(brick, brick_length), 70, 5, 5, 3, '?');
+            init_object(get_new_brick(brick, brick_length), 75, 5, 5, 3, '-');
+            init_object(get_new_brick(brick, brick_length), 80, 5, 5, 3, '?');
+            init_object(get_new_brick(brick, brick_length), 85, 5, 10, 3, '-');
+            init_object(get_new_brick(brick, brick_length), 100, 20, 20, 5, '#');
+            init_object(get_new_brick(brick, brick_length), 120, 15, 10, 10, '#');
+            init_object(get_new_brick(brick, brick_length), 150, 20, 40, 5, '#');
+            init_object(get_new_brick(brick, brick_length), 210, 15, 10, 10, '+');
 
-        init_object(get_new_moving(moving, moving_length), 25, 10, 3, 2, 'o');
-        init_object(get_new_moving(moving, moving_length), 80, 10, 3, 2, 'o');
-    }
+            init_object(get_new_moving(moving, moving_length), 25, 10, 3, 2, 'o');
+            init_object(get_new_moving(moving, moving_length), 80, 10, 3, 2, 'o');
 
-    if (lvl == 2){
-        brick_length = 0;
+            break;
+        }
 
-        init_object(get_new_brick(brick, brick_length), 20, 20, 40, 5, '#');
-        init_object(get_new_brick(brick, brick_length), 60, 15, 10, 10, '#');
-        init_object(get_new_brick(brick, brick_length), 80, 20, 20, 5, '#');
-        init_object(get_new_brick(brick, brick_length), 120, 15, 10, 10, '#');
-        init_object(get_new_brick(brick, brick_length), 150, 20, 40, 5, '#');
-        init_object(get_new_brick(brick, brick_length), 210, 15, 10, 10, '+');
+        case 2:{
+            brick_length = 0;
 
-        moving_length = 0;
+            init_object(get_new_brick(brick, brick_length), 20, 20, 40, 5, '#');
+            init_object(get_new_brick(brick, brick_length), 60, 15, 10, 10, '#');
+            init_object(get_new_brick(brick, brick_length), 80, 20, 20, 5, '#');
+            init_object(get_new_brick(brick, brick_length), 120, 15, 10, 10, '#');
+            init_object(get_new_brick(brick, brick_length), 150, 20, 40, 5, '#');
+            init_object(get_new_brick(brick, brick_length), 210, 15, 10, 10, '+');
 
-        init_object(get_new_moving(moving, moving_length), 25, 10, 3, 2, 'o');
-        init_object(get_new_moving(moving, moving_length), 80, 10, 3, 2, 'o');
-        init_object(get_new_moving(moving, moving_length), 65, 10, 3, 2, 'o');
-        init_object(get_new_moving(moving, moving_length), 120, 10, 3, 2, 'o');
-        init_object(get_new_moving(moving, moving_length), 160, 10, 3, 2, 'o');
-        init_object(get_new_moving(moving, moving_length), 175, 10, 3, 2, 'o');
-    }
+            moving_length = 0;
 
-    if (lvl == 3){
-        brick_length = 0;
+            init_object(get_new_moving(moving, moving_length), 25, 10, 3, 2, 'o');
+            init_object(get_new_moving(moving, moving_length), 80, 10, 3, 2, 'o');
+            init_object(get_new_moving(moving, moving_length), 65, 10, 3, 2, 'o');
+            init_object(get_new_moving(moving, moving_length), 120, 10, 3, 2, 'o');
+            init_object(get_new_moving(moving, moving_length), 160, 10, 3, 2, 'o');
+            init_object(get_new_moving(moving, moving_length), 175, 10, 3, 2, 'o');
 
-        init_object(get_new_brick(brick, brick_length), 20, 20, 40, 5, '#');
-        init_object(get_new_brick(brick, brick_length), 80, 20, 15, 5, '#');
-        init_object(get_new_brick(brick, brick_length), 120, 15, 15, 10, '#');
-        init_object(get_new_brick(brick, brick_length), 160, 10, 15, 15, '+');
+            break;
+        }
 
-        moving_length = 0;
+        case 3:{
+            brick_length = 0;
 
-        init_object(get_new_moving(moving, moving_length), 25, 10, 3, 2, 'o');
-        init_object(get_new_moving(moving, moving_length), 50, 10, 3, 2, 'o');
-        init_object(get_new_moving(moving, moving_length), 80, 10, 3, 2, 'o');
-        init_object(get_new_moving(moving, moving_length), 90, 10, 3, 2, 'o');
-        init_object(get_new_moving(moving, moving_length), 120, 10, 3, 2, 'o');
-        init_object(get_new_moving(moving, moving_length), 130, 10, 3, 2, 'o');
+            init_object(get_new_brick(brick, brick_length), 20, 20, 40, 5, '#');
+            init_object(get_new_brick(brick, brick_length), 80, 20, 15, 5, '#');
+            init_object(get_new_brick(brick, brick_length), 120, 15, 15, 10, '#');
+            init_object(get_new_brick(brick, brick_length), 160, 10, 15, 15, '+');
+
+            moving_length = 0;
+
+            init_object(get_new_moving(moving, moving_length), 25, 10, 3, 2, 'o');
+            init_object(get_new_moving(moving, moving_length), 50, 10, 3, 2, 'o');
+            init_object(get_new_moving(moving, moving_length), 80, 10, 3, 2, 'o');
+            init_object(get_new_moving(moving, moving_length), 90, 10, 3, 2, 'o');
+            init_object(get_new_moving(moving, moving_length), 120, 10, 3, 2, 'o');
+            init_object(get_new_moving(moving, moving_length), 130, 10, 3, 2, 'o');
+
+            break;
+        }
     }
 
     max_lvl = 3;
