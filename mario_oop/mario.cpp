@@ -1,8 +1,10 @@
 #include "Mario.hpp"
+#include "Game.hpp"
 
+#include <cstdlib>
 #include <windows.h>
 
-void Mario::vert_move_object(SObject* const obj, SObject*& brick, int& brick_length, SObject*& moving, int& moving_length, int& level, int& score, int& max_lvl){
+void Mario::vert_move_object(SObject* const obj, SObject*& brick, int& brick_length, SObject*& moving, int& moving_length, int& level, int& score, int& max_lvl, Game& game){
     obj->is_fly = TRUE;
     obj->vert_speed += 0.05f;
 
@@ -17,21 +19,7 @@ void Mario::vert_move_object(SObject* const obj, SObject*& brick, int& brick_len
             if ((brick[i].c_type == '?') && (obj->vert_speed < 0) && (obj == this)){
                 brick[i].c_type = '-';
 
-                moving_length++;
-
-                SObject* temp_moving = new SObject[moving_length];
-
-                if (moving != NULL){
-                    for (int j = 0; j < moving_length - 1; j++){
-                        temp_moving[j] = moving[j];
-                    }
-
-                    delete[] moving;
-                }
-
-                moving = temp_moving;
-
-                moving[moving_length - 1].init_object(
+                game.get_new_moving(moving, moving_length)->init_object(
                     brick[i].x,
                     brick[i].y - 3,
                     3,
@@ -51,6 +39,10 @@ void Mario::vert_move_object(SObject* const obj, SObject*& brick, int& brick_len
                 if (level > max_lvl){
                     level = 1;
                 }
+
+                system("color 2F");
+                game.create_level(level);
+                Sleep(1000);
             }
 
             break;
@@ -58,7 +50,7 @@ void Mario::vert_move_object(SObject* const obj, SObject*& brick, int& brick_len
     }
 }
 
-void Mario::horizon_move_object(SObject* const obj, SObject*& brick, int& brick_length, SObject*& moving, int& moving_length, int& level, int& score, int& max_lvl){
+void Mario::horizon_move_object(SObject* const obj, SObject*& brick, int& brick_length, SObject*& moving, int& moving_length, int& level, int& score, int& max_lvl, Game& game){
     obj->x += obj->horiz_speed;
 
     for (int i = 0; i < brick_length; i++){
@@ -73,7 +65,17 @@ void Mario::horizon_move_object(SObject* const obj, SObject*& brick, int& brick_
     if (obj->c_type == 'o'){
         SObject tmp = *obj;
 
-        vert_move_object(&tmp, brick, brick_length, moving, moving_length, level, score, max_lvl);
+        vert_move_object(
+            &tmp,
+            brick,
+            brick_length,
+            moving,
+            moving_length,
+            level,
+            score,
+            max_lvl,
+            game
+        );
 
         if (tmp.is_fly == TRUE){
             obj->x -= obj->horiz_speed;
@@ -82,7 +84,7 @@ void Mario::horizon_move_object(SObject* const obj, SObject*& brick, int& brick_
     }
 }
 
-void Mario::mario_collision(SObject*& moving, int& moving_length, int& score, SObject*& brick, int& brick_length, int& level, int& max_lvl){
+void Mario::mario_collision(SObject*& moving, int& moving_length, int& score, SObject*& brick, int& brick_length, int& level, int& max_lvl, Game& game){
     for (int i = 0; i < moving_length; i++){
         if (is_collision(moving[i])){
             switch (moving[i].c_type){
@@ -95,26 +97,11 @@ void Mario::mario_collision(SObject*& moving, int& moving_length, int& score, SO
                     if (is_mario_falling_on_top){
                         score += 50;
 
-                        moving_length--;
-
-                        if (moving_length > 0){
-                            moving[i] = moving[moving_length];
-
-                            SObject* temp_moving = new SObject[moving_length];
-
-                            for (int j = 0; j < moving_length; j++){
-                                temp_moving[j] = moving[j];
-                            }
-
-                            delete[] moving;
-                            moving = temp_moving;
-                        }
-                        else{
-                            delete[] moving;
-                            moving = NULL;
-                        }
-
+                        game.delete_moving(moving, moving_length, i);
                         i--;
+                    }
+                    else{
+                        game.player_dead();
                     }
 
                     break;
@@ -123,25 +110,7 @@ void Mario::mario_collision(SObject*& moving, int& moving_length, int& score, SO
                 case '$':{
                     score += 100;
 
-                    moving_length--;
-
-                    if (moving_length > 0){
-                        moving[i] = moving[moving_length];
-
-                        SObject* temp_moving = new SObject[moving_length];
-
-                        for (int j = 0; j < moving_length; j++){
-                            temp_moving[j] = moving[j];
-                        }
-
-                        delete[] moving;
-                        moving = temp_moving;
-                    }
-                    else{
-                        delete[] moving;
-                        moving = NULL;
-                    }
-
+                    game.delete_moving(moving, moving_length, i);
                     i--;
 
                     break;
