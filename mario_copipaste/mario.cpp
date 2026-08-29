@@ -161,7 +161,7 @@ void MarioCollision(){
             }
 
             if (moving[i].cType == '$'){
-                score += 100; 
+                score += 100;
                 DeleteMoving(i);
                 i--;
                 continue;
@@ -223,4 +223,135 @@ TObject *GetNewMoving(){
     movingLength++;
     moving = (TObject*)realloc(moving, sizeof(*moving) * movingLength);
     return moving + movingLength - 1;
+}
+
+void PutScoreOnMap(){
+    char c[30];
+    sprintf(c, "Score %d", score);
+    int len = strlen(c);
+
+    for (int i = 0; i < len; i++){
+        map[1][i+5] = c[i];
+    }
+}
+
+void CreateLevel(int lvl){
+    system("color 9F");
+
+    brickLength = 0;
+    brick = (TObject*)realloc(brick, 0);
+    movingLength = 0;
+    moving = (TObject*)realloc(moving, 0);
+
+    InitObject(&mario, 39, 10, 3, 3, '@');
+    score = 0;
+
+    if (lvl == 1){
+        brickLength = 0;
+
+        InitObject(GetNewBrick(), 20, 20, 40, 5, '#');
+        InitObject(GetNewBrick(), 30, 10, 5, 3, '?');
+        InitObject(GetNewBrick(), 50, 10, 5, 3, '?');
+        InitObject(GetNewBrick(), 60, 15, 40, 10, '#');
+        InitObject(GetNewBrick(), 60, 5, 10, 3, '-');
+        InitObject(GetNewBrick(), 70, 5, 5, 3, '?');
+        InitObject(GetNewBrick(), 75, 5, 5, 3, '-');
+        InitObject(GetNewBrick(), 80, 5, 5, 3, '?');
+        InitObject(GetNewBrick(), 85, 5, 10, 3, '-');
+        InitObject(GetNewBrick(), 100, 20, 20, 5, '#');
+        InitObject(GetNewBrick(), 120, 15, 10, 10, '#');
+        InitObject(GetNewBrick(), 150, 20, 40, 5, '#');
+        InitObject(GetNewBrick(), 210, 15, 10, 10, '+');
+
+        InitObject(GetNewMoving(), 25, 10, 3, 2, 'o');
+        InitObject(GetNewMoving(), 80, 10, 3, 2, 'o');
+    }
+
+    if (lvl == 2){
+        brickLength = 0;
+
+        InitObject(GetNewBrick(), 20, 20, 40, 5, '#');
+        InitObject(GetNewBrick(), 60, 15, 10, 10, '#');
+        InitObject(GetNewBrick(), 80, 20, 20, 5, '#');
+        InitObject(GetNewBrick(), 120, 15, 10, 10, '#');
+        InitObject(GetNewBrick(), 150, 20, 40, 5, '#');
+        InitObject(GetNewBrick(), 210, 15, 10, 10, '+');
+
+        movingLength = 0;
+
+        InitObject(GetNewMoving(), 25, 10, 3, 2, 'o');
+        InitObject(GetNewMoving(), 80, 10, 3, 2, 'o');
+        InitObject(GetNewMoving(), 65, 10, 3, 2, 'o');
+        InitObject(GetNewMoving(), 120, 10, 3, 2, 'o');
+        InitObject(GetNewMoving(), 160, 10, 3, 2, 'o');
+        InitObject(GetNewMoving(), 175, 10, 3, 2, 'o');
+    }
+
+    if (lvl == 3){
+        brickLength = 0;
+
+        InitObject(GetNewBrick(), 20, 20, 40, 5, '#');
+        InitObject(GetNewBrick(), 80, 20, 15, 5, '#');
+        InitObject(GetNewBrick(), 120, 15, 15, 10, '#');
+        InitObject(GetNewBrick(), 160, 10, 15, 15, '+');
+
+        movingLength = 0;
+
+        InitObject(GetNewMoving(), 25, 10, 3, 2, 'o');
+        InitObject(GetNewMoving(), 50, 10, 3, 2, 'o');
+        InitObject(GetNewMoving(), 80, 10, 3, 2, 'o');
+        InitObject(GetNewMoving(), 90, 10, 3, 2, 'o');
+        InitObject(GetNewMoving(), 120, 10, 3, 2, 'o');
+        InitObject(GetNewMoving(), 130, 10, 3, 2, 'o');
+    }
+
+    maxLvl = 3;
+}
+
+int main(){
+    CreateLevel(level);
+
+    do{
+        ClearMap();
+
+        if ((mario.IsFly == FALSE) && (GetKeyState(VK_SPACE) < 0)){
+            mario.vertSpeed = -1;
+        }
+
+        if (GetKeyState('A') < 0){
+            HorizonMoveMap(1);
+        }
+
+        if (GetKeyState('D') < 0){
+            HorizonMoveMap(-1);
+        }
+
+        if (mario.y > mapHeight){
+            PlayerDead();
+        }
+
+        VertMoveObject(&mario);
+        MarioCollision();
+
+        for (int i = 0; i < brickLength; i++){
+            PutObjectOnMap(brick[i]);
+        }
+
+        for (int i = 0; i < movingLength; i++){
+            VertMoveObject(moving + i);
+            HorizonMoveObject(moving + i);
+            PutObjectOnMap(moving[i]);
+        }
+
+        PutObjectOnMap(mario);
+        PutScoreOnMap();
+
+        setCur(0, 0);
+        ShowMap();
+
+        //Sleep(10);
+
+    }while (GetKeyState(VK_ESCAPE) >= 0);
+
+    return 0;
 }
